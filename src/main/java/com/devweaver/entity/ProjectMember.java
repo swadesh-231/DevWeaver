@@ -9,7 +9,6 @@ public class ProjectMember {
     private Project project;
     private User user;
     private ProjectRoles projectRole;
-
     private Instant invited_at;
     private Instant accepted_at;
 

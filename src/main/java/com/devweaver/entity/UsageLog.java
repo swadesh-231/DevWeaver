@@ -9,7 +9,7 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class UserLog {
+public class UsageLog {
     private Long id;
     private User user;
     private Project project;

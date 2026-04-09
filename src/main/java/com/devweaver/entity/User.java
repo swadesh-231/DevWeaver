@@ -1,7 +1,6 @@
 package com.devweaver.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -17,7 +16,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 @Table(name = "users")
+@Entity
 public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String username;
 
@@ -30,7 +32,9 @@ public class User {
     private String email;
     private String image_url;
 
+    @CreationTimestamp
     private Instant created_at;
+    @UpdateTimestamp
     private Instant updated_at;
     private Instant deleted_at;
 }
