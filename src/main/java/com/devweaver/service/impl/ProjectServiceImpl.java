@@ -3,20 +3,32 @@ package com.devweaver.service.impl;
 import com.devweaver.dto.project.ProjectRequest;
 import com.devweaver.dto.project.ProjectResponse;
 import com.devweaver.dto.project.ProjectSummary;
+import com.devweaver.entity.Project;
+import com.devweaver.entity.User;
+import com.devweaver.mapper.ProjectMapper;
 import com.devweaver.repository.ProjectRepository;
+import com.devweaver.repository.UserRepository;
 import com.devweaver.service.ProjectService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ProjectServiceImpl implements ProjectService {
     private final ProjectRepository projectRepository;
+    private final UserRepository userRepository;
+    private final ProjectMapper projectMapper;
     @Override
     public List<ProjectSummary> getUserProjects(Long userId) {
-        return List.of();
+        return projectRepository.findAllAccessibleByUser(userId).stream()
+                .map(projectMapper::toProjectSummary).collect(Collectors.toList());
+
     }
 
     @Override
@@ -26,7 +38,16 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public ProjectResponse createProject(ProjectRequest request, Long userId) {
-        return null;
+        User creator = userRepository.findById(userId)
+                        .orElseThrow(()->new RuntimeException("User not found"));
+        Project project = Project
+                .builder()
+                .name(request.name())
+                .creator(creator)
+                .isPublic(false)
+                .build();
+        projectRepository.save(project);
+        return projectMapper.toProjectResponse(project);
     }
 
     @Override

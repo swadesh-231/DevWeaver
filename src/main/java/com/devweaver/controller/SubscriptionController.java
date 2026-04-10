@@ -3,6 +3,7 @@ package com.devweaver.controller;
 import com.devweaver.dto.plan.*;
 import com.devweaver.service.PlanService;
 import com.devweaver.service.SubscriptionService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +30,7 @@ public class SubscriptionController {
 
     @PostMapping("/api/stripe/checkout")
     public ResponseEntity<CheckoutResponse> createCheckoutResponse(
-            @RequestBody CheckoutRequest request
+            @Valid @RequestBody CheckoutRequest request
     ) {
         Long userId = 1L;
         return ResponseEntity.ok(subscriptionService.createCheckoutSessionUrl(request, userId));

@@ -5,6 +5,7 @@ import com.devweaver.dto.member.MemberResponse;
 import com.devweaver.dto.member.UpdateMemberRoleRequest;
 import com.devweaver.entity.ProjectMember;
 import com.devweaver.service.ProjectMemberService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpStatus;
@@ -28,7 +29,7 @@ public class ProjectMemberController {
     @PostMapping
     public ResponseEntity<MemberResponse> inviteMember(
             @PathVariable Long projectId,
-            @RequestBody InviteMemberRequest request
+            @Valid @RequestBody InviteMemberRequest request
     ) {
         Long userId = 1L;
         return ResponseEntity.ok(projectMemberService.inviteMember(projectId,request,userId));
@@ -38,7 +39,7 @@ public class ProjectMemberController {
     public ResponseEntity<MemberResponse> updateMemberRole(
             @PathVariable Long projectId,
             @PathVariable Long memberId,
-            @RequestBody UpdateMemberRoleRequest request
+            @Valid @RequestBody UpdateMemberRoleRequest request
     ) {
         Long userId = 1L;
         return ResponseEntity.ok(projectMemberService.updateMemberRole(projectId, memberId, request, userId));
