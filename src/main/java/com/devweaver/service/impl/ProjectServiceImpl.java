@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,12 +29,13 @@ public class ProjectServiceImpl implements ProjectService {
     public List<ProjectSummary> getUserProjects(Long userId) {
         return projectRepository.findAllAccessibleByUser(userId).stream()
                 .map(projectMapper::toProjectSummary).collect(Collectors.toList());
-
     }
 
     @Override
     public ProjectResponse getUserProjectById(Long id, Long userId) {
-        return null;
+       Project project = projectRepository.findAccessibleProjectById(id,userId)
+               .orElseThrow(RuntimeException::new);
+       return projectMapper.toProjectResponse(project);
     }
 
     @Override
@@ -52,11 +54,24 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public ProjectResponse updateProject(Long id, ProjectRequest request, Long userId) {
-        return null;
+        Project project = projectRepository.findAccessibleProjectById(id,userId)
+                .orElseThrow(RuntimeException::new);
+        if (!project.getCreator().getId().equals(userId)) {
+            throw new RuntimeException("Only the project creator can delete this project");
+        }
+        project.setName(request.name());
+        projectRepository.save(project);
+        return projectMapper.toProjectResponse(project);
     }
 
     @Override
     public void softDelete(Long id, Long userId) {
-
+        Project project = projectRepository.findAccessibleProjectById(id, userId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+        if (!project.getCreator().getId().equals(userId)) {
+            throw new RuntimeException("Only the project creator can delete this project");
+        }
+        project.setDeletedAt(Instant.now());
+        projectRepository.save(project);
     }
 }

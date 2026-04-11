@@ -1,17 +1,17 @@
 package com.devweaver.entity;
 
-import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.ToString;
 
-@Embeddable
-@Getter
-@Setter
+import java.io.Serializable;
+
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProjectMemberId {
+@Builder
+@ToString
+public class ChatSessionId implements Serializable {
     private Long projectId;
     private Long userId;
 }

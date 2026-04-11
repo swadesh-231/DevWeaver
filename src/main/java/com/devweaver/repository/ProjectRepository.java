@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ProjectRepository extends JpaRepository<Project, Long> {
     @Query("""
@@ -15,4 +16,14 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
         ORDER BY p.updatedAt DESC 
       """)
     List<Project> findAllAccessibleByUser(@Param("userId") Long userId);
+
+    @Query("""
+        SELECT p FROM Project p
+              LEFT JOIN FETCH p.creator
+              WHERE p.id = :projectId
+              AND p.deletedAt IS NULL 
+              AND p.creator.id = :userId
+      """)
+    Optional<Project> findAccessibleProjectById(@Param("projectId") Long projectId,
+                                         @Param("userId") Long userId);
 }
