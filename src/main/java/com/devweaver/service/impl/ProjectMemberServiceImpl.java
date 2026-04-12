@@ -7,7 +7,11 @@ import com.devweaver.entity.Project;
 import com.devweaver.entity.ProjectMember;
 import com.devweaver.entity.ProjectMemberId;
 import com.devweaver.entity.User;
-import com.devweaver.mapper.ProjectMapper;
+import com.devweaver.exception.BadRequestException;
+import com.devweaver.exception.DuplicateResourceException;
+import com.devweaver.exception.ResourceNotFoundException;
+import com.devweaver.exception.UnauthorizedAccessException;
+import com.devweaver.exception.UserNotFoundException;
 import com.devweaver.mapper.ProjectMemberMapper;
 import com.devweaver.repository.ProjectMemberRepository;
 import com.devweaver.repository.ProjectRepository;
@@ -30,7 +34,7 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     @Override
     public List<MemberResponse> getProjectMembers(Long projectId, Long userId) {
         Project project = projectRepository.findAccessibleProjectById(projectId, userId)
-                .orElse(null);
+                .orElseThrow(() -> new ResourceNotFoundException("Project", "id", projectId));
         List<MemberResponse> projectMembers = new ArrayList<>();
         projectMembers.add(projectMemberMapper.toMemberResponseFromCreator(project.getCreator()));
         projectMembers.addAll(
@@ -45,18 +49,18 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     @Override
     public MemberResponse inviteMember(Long projectId, InviteMemberRequest request, Long userId) {
         Project project = projectRepository.findAccessibleProjectById(projectId, userId)
-                .orElse(null);
+                .orElseThrow(() -> new ResourceNotFoundException("Project", "id", projectId));
         if (!project.getCreator().getId().equals(userId)) {
-            throw new RuntimeException("Not Allowed to invite member");
+            throw new UnauthorizedAccessException("invite members to", "project");
         }
         User invitedUser = userRepository.findByEmail(request.email())
-                .orElse(null);
+                .orElseThrow(() -> new UserNotFoundException("email", request.email()));
         if (invitedUser.getId().equals(userId)) {
-            throw new RuntimeException("Not Allowed to invite member");
+            throw new BadRequestException("Cannot invite yourself to the project");
         }
         ProjectMemberId projectMemberId = new ProjectMemberId(projectId, invitedUser.getId());
         if (projectMemberRepository.existsById(projectMemberId)) {
-            throw new RuntimeException("Not Allowed to invite member");
+            throw new DuplicateResourceException("Member", "email", request.email());
         }
         ProjectMember projectMember = ProjectMember
                 .builder()
@@ -73,12 +77,13 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     @Override
     public MemberResponse updateMemberRole(Long projectId, Long memberId, UpdateMemberRoleRequest request, Long userId) {
         Project project = projectRepository.findAccessibleProjectById(projectId, userId)
-                .orElse(null);
+                .orElseThrow(() -> new ResourceNotFoundException("Project", "id", projectId));
         if (!project.getCreator().getId().equals(userId)) {
-            throw new RuntimeException("Not Allowed to invite member");
+            throw new UnauthorizedAccessException("update member roles in", "project");
         }
         ProjectMemberId projectMemberId = new ProjectMemberId(projectId, memberId);
-        ProjectMember projectMember  =  projectMemberRepository.findById(projectMemberId).orElse(null);
+        ProjectMember projectMember = projectMemberRepository.findById(projectMemberId)
+                .orElseThrow(() -> new ResourceNotFoundException("Member", "id", memberId));
         projectMember.setProjectRole(request.role());
         projectMemberRepository.save(projectMember);
         return projectMemberMapper.toProjectMemberResponseFromMember(projectMember);
@@ -87,13 +92,13 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     @Override
     public void deleteProjectMember(Long projectId, Long memberId, Long userId) {
         Project project = projectRepository.findAccessibleProjectById(projectId, userId)
-                .orElse(null);
+                .orElseThrow(() -> new ResourceNotFoundException("Project", "id", projectId));
         if (!project.getCreator().getId().equals(userId)) {
-            throw new RuntimeException("Not Allowed to invite member");
+            throw new UnauthorizedAccessException("remove members from", "project");
         }
         ProjectMemberId projectMemberId = new ProjectMemberId(projectId, memberId);
-        if (projectMemberRepository.existsById(projectMemberId)) {
-            throw new RuntimeException("Not Allowed to invite member");
+        if (!projectMemberRepository.existsById(projectMemberId)) {
+            throw new ResourceNotFoundException("Member", "id", memberId);
         }
         projectMemberRepository.deleteById(projectMemberId);
 

@@ -8,6 +8,9 @@ import com.devweaver.entity.User;
 import com.devweaver.mapper.ProjectMapper;
 import com.devweaver.repository.ProjectRepository;
 import com.devweaver.repository.UserRepository;
+import com.devweaver.exception.ResourceNotFoundException;
+import com.devweaver.exception.UnauthorizedAccessException;
+import com.devweaver.exception.UserNotFoundException;
 import com.devweaver.service.ProjectService;
 
 import lombok.RequiredArgsConstructor;
@@ -33,15 +36,15 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public ProjectResponse getUserProjectById(Long id, Long userId) {
-       Project project = projectRepository.findAccessibleProjectById(id,userId)
-               .orElseThrow(RuntimeException::new);
+       Project project = projectRepository.findAccessibleProjectById(id, userId)
+               .orElseThrow(() -> new ResourceNotFoundException("Project", "id", id));
        return projectMapper.toProjectResponse(project);
     }
 
     @Override
     public ProjectResponse createProject(ProjectRequest request, Long userId) {
         User creator = userRepository.findById(userId)
-                        .orElseThrow(()->new RuntimeException("User not found"));
+                        .orElseThrow(() -> new UserNotFoundException("id", userId));
         Project project = Project
                 .builder()
                 .name(request.name())
@@ -54,10 +57,10 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public ProjectResponse updateProject(Long id, ProjectRequest request, Long userId) {
-        Project project = projectRepository.findAccessibleProjectById(id,userId)
-                .orElseThrow(RuntimeException::new);
+        Project project = projectRepository.findAccessibleProjectById(id, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Project", "id", id));
         if (!project.getCreator().getId().equals(userId)) {
-            throw new RuntimeException("Only the project creator can delete this project");
+            throw new UnauthorizedAccessException("update", "project");
         }
         project.setName(request.name());
         projectRepository.save(project);
@@ -67,9 +70,9 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public void softDelete(Long id, Long userId) {
         Project project = projectRepository.findAccessibleProjectById(id, userId)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Project", "id", id));
         if (!project.getCreator().getId().equals(userId)) {
-            throw new RuntimeException("Only the project creator can delete this project");
+            throw new UnauthorizedAccessException("delete", "project");
         }
         project.setDeletedAt(Instant.now());
         projectRepository.save(project);
