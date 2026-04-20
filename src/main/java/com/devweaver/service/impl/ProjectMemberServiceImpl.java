@@ -16,12 +16,12 @@ import com.devweaver.mapper.ProjectMemberMapper;
 import com.devweaver.repository.ProjectMemberRepository;
 import com.devweaver.repository.ProjectRepository;
 import com.devweaver.repository.UserRepository;
+import com.devweaver.security.jwt.JwtUtils;
 import com.devweaver.service.ProjectMemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -31,28 +31,21 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     private final ProjectMemberRepository projectMemberRepository;
     private final ProjectMemberMapper projectMemberMapper;
     private final UserRepository userRepository;
-    @Override
-    public List<MemberResponse> getProjectMembers(Long projectId, Long userId) {
-        Project project = projectRepository.findAccessibleProjectById(projectId, userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Project", "id", projectId));
-        List<MemberResponse> projectMembers = new ArrayList<>();
-        projectMembers.add(projectMemberMapper.toMemberResponseFromCreator(project.getCreator()));
-        projectMembers.addAll(
-                projectMemberRepository.findByProjectId(projectId)
-                        .stream()
-                        .map(projectMemberMapper::toProjectMemberResponseFromMember)
-                        .toList());
-        return projectMembers;
+    private final JwtUtils jwtUtils;
 
+    @Override
+    public List<MemberResponse> getProjectMembers(Long projectId) {
+        return projectMemberRepository.findByProjectMemberIdProjectId(projectId)
+                .stream()
+                .map(projectMemberMapper::toProjectMemberResponseFromMember)
+                .toList();
     }
 
     @Override
-    public MemberResponse inviteMember(Long projectId, InviteMemberRequest request, Long userId) {
+    public MemberResponse inviteMember(Long projectId, InviteMemberRequest request) {
+        Long userId = jwtUtils.getCurrentUserId();
         Project project = projectRepository.findAccessibleProjectById(projectId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Project", "id", projectId));
-        if (!project.getCreator().getId().equals(userId)) {
-            throw new UnauthorizedAccessException("invite members to", "project");
-        }
         User invitedUser = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new UserNotFoundException("email", request.email()));
         if (invitedUser.getId().equals(userId)) {
@@ -75,12 +68,11 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     }
 
     @Override
-    public MemberResponse updateMemberRole(Long projectId, Long memberId, UpdateMemberRoleRequest request, Long userId) {
+    public MemberResponse updateMemberRole(Long projectId, Long memberId, UpdateMemberRoleRequest request) {
+        Long userId = jwtUtils.getCurrentUserId();
         Project project = projectRepository.findAccessibleProjectById(projectId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Project", "id", projectId));
-        if (!project.getCreator().getId().equals(userId)) {
-            throw new UnauthorizedAccessException("update member roles in", "project");
-        }
+
         ProjectMemberId projectMemberId = new ProjectMemberId(projectId, memberId);
         ProjectMember projectMember = projectMemberRepository.findById(projectMemberId)
                 .orElseThrow(() -> new ResourceNotFoundException("Member", "id", memberId));
@@ -90,12 +82,10 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     }
 
     @Override
-    public void deleteProjectMember(Long projectId, Long memberId, Long userId) {
+    public void deleteProjectMember(Long projectId, Long memberId) {
+        Long userId = jwtUtils.getCurrentUserId();
         Project project = projectRepository.findAccessibleProjectById(projectId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Project", "id", projectId));
-        if (!project.getCreator().getId().equals(userId)) {
-            throw new UnauthorizedAccessException("remove members from", "project");
-        }
         ProjectMemberId projectMemberId = new ProjectMemberId(projectId, memberId);
         if (!projectMemberRepository.existsById(projectMemberId)) {
             throw new ResourceNotFoundException("Member", "id", memberId);

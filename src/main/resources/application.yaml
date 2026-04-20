@@ -14,9 +14,15 @@ spring:
     defer-datasource-initialization: true
 
 
-  sql:
-    init:
-      mode: always     # run schema.sql + data.sql
+  app:
+    secret-key: ${JWT_SECRET}
+    expiration: ${JWT_EXPIRATION}
+    refreshtoken: ${JWT_REFRESH_TOKEN}
+
+
+#  sql:
+#    init:
+#      mode: always     # run schema.sql + data.sql
 
 
 
