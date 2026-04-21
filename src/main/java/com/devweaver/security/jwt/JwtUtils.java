@@ -26,7 +26,6 @@ public class JwtUtils {
     @Value("${spring.app.refreshtoken}")
     private Long refreshTime;
 
-
     private SecretKey getSecretKey() {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
@@ -36,7 +35,7 @@ public class JwtUtils {
                 .subject(user.getUsername())
                 .claim("userId", user.getId().toString())
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 1000*60*100))
+                .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSecretKey())
                 .compact();
     }
@@ -47,7 +46,6 @@ public class JwtUtils {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-
         Long userId = Long.parseLong(claims.get("userId", String.class));
         String email = claims.getSubject();
         return new JwtUserPrincipal(userId, email, new ArrayList<>());

@@ -19,6 +19,7 @@ import com.devweaver.repository.UserRepository;
 import com.devweaver.security.jwt.JwtUtils;
 import com.devweaver.service.ProjectMemberService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -34,6 +35,7 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     private final JwtUtils jwtUtils;
 
     @Override
+    @PreAuthorize("@security.canViewMembers(#projectId)")
     public List<MemberResponse> getProjectMembers(Long projectId) {
         return projectMemberRepository.findByProjectMemberIdProjectId(projectId)
                 .stream()
@@ -42,6 +44,7 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     }
 
     @Override
+    @PreAuthorize("@security.canManageMembers(#projectId)")
     public MemberResponse inviteMember(Long projectId, InviteMemberRequest request) {
         Long userId = jwtUtils.getCurrentUserId();
         Project project = projectRepository.findAccessibleProjectById(projectId, userId)
@@ -68,6 +71,7 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     }
 
     @Override
+    @PreAuthorize("@security.canManageMembers(#projectId)")
     public MemberResponse updateMemberRole(Long projectId, Long memberId, UpdateMemberRoleRequest request) {
         Long userId = jwtUtils.getCurrentUserId();
         Project project = projectRepository.findAccessibleProjectById(projectId, userId)
@@ -82,6 +86,7 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     }
 
     @Override
+    @PreAuthorize("@security.canManageMembers(#projectId)")
     public void deleteProjectMember(Long projectId, Long memberId) {
         Long userId = jwtUtils.getCurrentUserId();
         Project project = projectRepository.findAccessibleProjectById(projectId, userId)
@@ -91,6 +96,5 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
             throw new ResourceNotFoundException("Member", "id", memberId);
         }
         projectMemberRepository.deleteById(projectMemberId);
-
     }
 }

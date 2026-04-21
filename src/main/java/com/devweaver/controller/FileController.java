@@ -2,6 +2,7 @@ package com.devweaver.controller;
 
 import com.devweaver.dto.project.FileContentResponse;
 import com.devweaver.dto.project.FileNode;
+import com.devweaver.security.jwt.JwtUtils;
 import com.devweaver.service.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,19 +18,20 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FileController {
     private final FileService fileService;
+    private final JwtUtils jwtUtils;
 
     @GetMapping
     public ResponseEntity<List<FileNode>> getFileTree(@PathVariable Long projectId) {
-        Long userId = 1L;
+        Long userId = jwtUtils.getCurrentUserId();
         return ResponseEntity.ok(fileService.getFileTree(projectId, userId));
     }
 
-    @GetMapping("/{*path}") // /src/hooks/get-user-hook.jsx
+    @GetMapping("/{*path}")
     public ResponseEntity<FileContentResponse> getFile(
             @PathVariable Long projectId,
             @PathVariable String path
     ) {
-        Long userId = 1L;
+        Long userId = jwtUtils.getCurrentUserId();
         return ResponseEntity.ok(fileService.getFileContent(projectId, path, userId));
     }
 }

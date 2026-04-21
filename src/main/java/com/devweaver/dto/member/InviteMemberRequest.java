@@ -1,6 +1,6 @@
 package com.devweaver.dto.member;
 
-import com.devweaver.entity.enums.ProjectRoles;
+import com.devweaver.entity.enums.ProjectRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -11,6 +11,6 @@ public record InviteMemberRequest(
         String email,
 
         @NotNull(message = "Role is required")
-        ProjectRoles role
+        ProjectRole role
 ) {
 }

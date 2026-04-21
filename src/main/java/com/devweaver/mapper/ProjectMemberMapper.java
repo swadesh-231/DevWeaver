@@ -10,12 +10,12 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface ProjectMemberMapper {
     @Mapping(target = "userId",source = "id")
-    @Mapping(target = "projectRoles", constant = "CREATOR")
+    @Mapping(target = "projectRole", constant = "OWNER")
     MemberResponse toMemberResponseFromCreator(User creator);
 
     @Mapping(target = "userId",source = "user.id")
     @Mapping(target = "email",source = "user.email")
     @Mapping(target = "name",source = "user.username")
-    @Mapping(target = "projectRoles", source = "projectRole")
+    @Mapping(target = "projectRole", source = "projectRole")
     MemberResponse toProjectMemberResponseFromMember(ProjectMember projectMember);
 }

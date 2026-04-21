@@ -1,6 +1,7 @@
 package com.devweaver.security.jwt;
 
 import com.devweaver.security.dto.JwtUserPrincipal;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -49,7 +50,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
 
             filterChain.doFilter(request, response);
-        } catch (Exception e) {
+        } catch (JwtException e) {
             exceptionResolver.resolveException(request, response, null, e);
         }
     }

@@ -7,18 +7,18 @@ import com.devweaver.entity.Project;
 import com.devweaver.entity.ProjectMember;
 import com.devweaver.entity.ProjectMemberId;
 import com.devweaver.entity.User;
-import com.devweaver.entity.enums.ProjectRoles;
+import com.devweaver.entity.enums.ProjectRole;
 import com.devweaver.mapper.ProjectMapper;
 import com.devweaver.repository.ProjectMemberRepository;
 import com.devweaver.repository.ProjectRepository;
 import com.devweaver.repository.UserRepository;
 import com.devweaver.exception.ResourceNotFoundException;
-import com.devweaver.exception.UnauthorizedAccessException;
 import com.devweaver.exception.UserNotFoundException;
 import com.devweaver.security.jwt.JwtUtils;
 import com.devweaver.service.ProjectService;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,10 +43,11 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ProjectResponse getUserProjectById(Long id) {
+    @PreAuthorize("@security.canViewProject(#projectId)")
+    public ProjectResponse getUserProjectById(Long projectId) {
         Long userId = jwtUtils.getCurrentUserId();
-        Project project = projectRepository.findAccessibleProjectById(id, userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Project", "id", id));
+        Project project = projectRepository.findAccessibleProjectById(projectId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Project", "id", projectId));
         return projectMapper.toProjectResponse(project);
     }
 
@@ -64,7 +65,7 @@ public class ProjectServiceImpl implements ProjectService {
         ProjectMemberId projectMemberId = new ProjectMemberId(project.getId(), creator.getId());
         ProjectMember projectMember = ProjectMember.builder()
                 .projectMemberId(projectMemberId)
-                .projectRole(ProjectRoles.CREATOR)
+                .projectRole(ProjectRole.OWNER)
                 .user(creator)
                 .accepted_at(Instant.now())
                 .invited_at(Instant.now())
@@ -75,26 +76,27 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ProjectResponse updateProject(Long id, ProjectRequest request) {
+    @PreAuthorize("@security.canEditProject(#projectId)")
+    public ProjectResponse updateProject(Long projectId, ProjectRequest request) {
         Long userId = jwtUtils.getCurrentUserId();
-        Project project = projectRepository.findAccessibleProjectById(id, userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Project", "id", id));
+        Project project = projectRepository.findAccessibleProjectById(projectId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Project", "id", projectId));
         project.setName(request.name());
         projectRepository.save(project);
         return projectMapper.toProjectResponse(project);
     }
 
     @Override
-    public void softDelete(Long id) {
+    @PreAuthorize("@security.canDeleteProject(#projectId)")
+    public void softDelete(Long projectId) {
         Long userId = jwtUtils.getCurrentUserId();
-        Project project = projectRepository.findAccessibleProjectById(id, userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Project", "id", id));
-        ProjectRoles role = projectMemberRepository.findRoleByProjectIdAndUserId(id, userId)
-                .orElseThrow(() -> new UnauthorizedAccessException("delete", "project"));
-        if (role != ProjectRoles.CREATOR) {
-            throw new UnauthorizedAccessException("delete", "project");
-        }
+        Project project = getAccessibleProjectById(projectId, userId);
+
         project.setDeletedAt(Instant.now());
         projectRepository.save(project);
+    }
+    public Project getAccessibleProjectById(Long projectId, Long userId) {
+        return projectRepository.findAccessibleProjectById(projectId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Project", "id", projectId));
     }
 }

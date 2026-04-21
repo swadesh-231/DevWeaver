@@ -4,6 +4,7 @@ import com.devweaver.dto.auth.AuthResponse;
 import com.devweaver.dto.auth.LoginRequest;
 import com.devweaver.dto.auth.RegisterRequest;
 import com.devweaver.dto.auth.UserResponse;
+import com.devweaver.security.jwt.JwtUtils;
 import com.devweaver.service.AuthService;
 import com.devweaver.service.UserService;
 import jakarta.validation.Valid;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     private final AuthService authService;
     private final UserService userService;
+    private final JwtUtils jwtUtils;
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest registerRequest) {
@@ -28,7 +30,7 @@ public class AuthController {
     }
     @GetMapping("/user")
     public ResponseEntity<UserResponse> getProfile(){
-        Long userId = 1L;
+        Long userId = jwtUtils.getCurrentUserId();
         return ResponseEntity.ok(userService.getProfile(userId));
     }
 }
