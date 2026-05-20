@@ -10,8 +10,8 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create-drop
-    defer-datasource-initialization: true
+      ddl-auto: update
+#    defer-datasource-initialization: true
 
 
   app:
@@ -19,6 +19,15 @@ spring:
     expiration: ${JWT_EXPIRATION}
     refreshtoken: ${JWT_REFRESH_TOKEN}
 
+  stripe:
+    api:
+      secret: ${STRIPE_SECRET_KEY}
+    webhook:
+      secret: ${STRIPE_WEBHOOK_SECRET}
+
+
+  client:
+    url: http://localhost:8080
 
 #  sql:
 #    init:

@@ -32,6 +32,8 @@ public class User implements UserDetails {
     @Column(unique = true)
     private String email;
     private String image_url;
+    @Column(unique = true)
+    private String stripe_customer_id;
 
     @CreationTimestamp
     private Instant created_at;

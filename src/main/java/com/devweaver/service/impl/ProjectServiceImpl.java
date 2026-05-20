@@ -54,8 +54,9 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public ProjectResponse createProject(ProjectRequest request) {
         Long userId = jwtUtils.getCurrentUserId();
-        User creator = userRepository.findById(userId)
-                        .orElseThrow(() -> new UserNotFoundException("id", userId));
+//        User creator = userRepository.findById(userId)
+//                        .orElseThrow(() -> new UserNotFoundException("id", userId));
+        User creator = userRepository.getReferenceById(userId);
         Project project = Project
                 .builder()
                 .name(request.name())

@@ -26,8 +26,8 @@ public class Project {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
+    @Builder.Default
     private Boolean isPublic = false;
-
     @CreationTimestamp
     private Instant createdAt;
     @UpdateTimestamp

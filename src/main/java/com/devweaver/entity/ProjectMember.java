@@ -16,15 +16,20 @@ import java.time.Instant;
 public class ProjectMember {
     @EmbeddedId
     private ProjectMemberId projectMemberId;
+
+
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("projectId")
     private Project project;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("userId")
     private User user;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ProjectRole projectRole;
+
     private Instant invited_at;
     private Instant accepted_at;
 

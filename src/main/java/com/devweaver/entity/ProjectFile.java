@@ -3,7 +3,6 @@ package com.devweaver.entity;
 import lombok.*;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -19,5 +18,5 @@ public class ProjectFile {
     private User updated_by;
 
     private Instant created_at;
-    private Instant deleted_at;
+    private Instant updated_at;
 }

@@ -10,7 +10,6 @@ import com.devweaver.entity.User;
 import com.devweaver.exception.BadRequestException;
 import com.devweaver.exception.DuplicateResourceException;
 import com.devweaver.exception.ResourceNotFoundException;
-import com.devweaver.exception.UnauthorizedAccessException;
 import com.devweaver.exception.UserNotFoundException;
 import com.devweaver.mapper.ProjectMemberMapper;
 import com.devweaver.repository.ProjectMemberRepository;
@@ -21,12 +20,14 @@ import com.devweaver.service.ProjectMemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ProjectMemberServiceImpl implements ProjectMemberService {
     private final ProjectRepository projectRepository;
     private final ProjectMemberRepository projectMemberRepository;

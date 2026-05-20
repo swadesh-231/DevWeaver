@@ -32,6 +32,7 @@ public class ChatMessage {
     @OneToMany(mappedBy = "chatMessage", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @OrderBy("sequenceOrder ASC")
     private List<ChatEvents> events;
+    @Builder.Default
     private Integer tokenUsed = 0;
 
     @CreationTimestamp
