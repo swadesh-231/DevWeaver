@@ -16,7 +16,7 @@ public class Plan {
     private Long id;
     private String name;
     @Column(unique = true)
-    private String stripe_price_id;
+    private String stripePriceId;
     private Integer max_projects;
     private Integer max_token_per_day;
     private Integer max_preview;

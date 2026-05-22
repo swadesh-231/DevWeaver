@@ -3,6 +3,8 @@ package com.devweaver.repository;
 import com.devweaver.entity.Plan;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface PlanRepository extends JpaRepository<Plan, Long> {
+import java.util.Optional;
 
+public interface PlanRepository extends JpaRepository<Plan, Long> {
+    Optional<Plan> findByStripePriceId(String id);
 }

@@ -1,8 +1,7 @@
 package com.devweaver.entity;
 
 import com.devweaver.entity.enums.SubscriptionStatus;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Instant;
@@ -12,12 +11,21 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Entity
 public class Subscription {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "plan_id", nullable = false)
     private Plan plan;
 
-    private String stripe_subscription_id;
+    @Column(name = "stripe_subscription_id")
+    private String stripeSubscriptionId;
 
     @Enumerated(EnumType.STRING)
     private SubscriptionStatus status;

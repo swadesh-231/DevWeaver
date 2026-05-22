@@ -8,6 +8,7 @@ import com.devweaver.entity.ProjectMember;
 import com.devweaver.entity.ProjectMemberId;
 import com.devweaver.entity.User;
 import com.devweaver.entity.enums.ProjectRole;
+import com.devweaver.exception.BadRequestException;
 import com.devweaver.mapper.ProjectMapper;
 import com.devweaver.repository.ProjectMemberRepository;
 import com.devweaver.repository.ProjectRepository;
@@ -17,6 +18,7 @@ import com.devweaver.exception.UserNotFoundException;
 import com.devweaver.security.jwt.JwtUtils;
 import com.devweaver.service.ProjectService;
 
+import com.devweaver.service.SubscriptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -35,6 +37,7 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProjectMapper projectMapper;
     private final ProjectMemberRepository projectMemberRepository;
     private final JwtUtils jwtUtils;
+    private final SubscriptionService subscriptionService;
     @Override
     public List<ProjectSummary> getUserProjects() {
         Long userId = jwtUtils.getCurrentUserId();
@@ -53,9 +56,10 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public ProjectResponse createProject(ProjectRequest request) {
+        if(!subscriptionService.canCreateNewProject()) {
+            throw new BadRequestException("User cannot create a New project with current Plan, Upgrade plan now.");
+        }
         Long userId = jwtUtils.getCurrentUserId();
-//        User creator = userRepository.findById(userId)
-//                        .orElseThrow(() -> new UserNotFoundException("id", userId));
         User creator = userRepository.getReferenceById(userId);
         Project project = Project
                 .builder()

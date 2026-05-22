@@ -43,8 +43,7 @@ public class SubscriptionController {
 
     @GetMapping("/subscriptions/me")
     public ResponseEntity<SubscriptionResponse> getMySubscription() {
-        Long userId = jwtUtils.getCurrentUserId();
-        return ResponseEntity.ok(subscriptionService.getCurrentSubscription(userId));
+        return ResponseEntity.ok(subscriptionService.getCurrentSubscription());
     }
 
     @PostMapping("/payments/checkout")
@@ -57,8 +56,7 @@ public class SubscriptionController {
 
     @PostMapping("/payments/portal")
     public ResponseEntity<PortalResponse> openCustomerPortal() {
-        Long userId = jwtUtils.getCurrentUserId();
-        return ResponseEntity.ok(paymentProcessor.openCustomerPortal(userId));
+        return ResponseEntity.ok(paymentProcessor.openCustomerPortal());
     }
 
     @PostMapping("/webhooks/payment")
